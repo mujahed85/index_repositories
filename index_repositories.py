@@ -56,8 +56,25 @@ def fetch_repositories(org_name, pat):
     
     return repos
 
+def format_output(all_repositories):
+    """Format the output to the required structure"""
+    output = []
+    for org, repos in all_repositories.items():
+        output.append(f"{org}:")
+        for repo in repos:
+            output.append(f"    {repo['name']} {repo['url']}")
+        output.append("")  # Blank line between organizations
+    return "\n".join(output)
+
+def write_to_readme(formatted_output):
+    """Write the formatted output to the README.md file"""
+    with open('README.md', 'w') as readme_file:
+        readme_file.write("# GitHub Organization Repository Index\n\n")
+        readme_file.write(formatted_output)
+        print("README.md file updated successfully.")
+
 def index_repositories(pat):
-    """Index repositories from all organizations and write to a JSON file"""
+    """Index repositories from all organizations, format output, and write to README.md"""
     # Fetch organizations dynamically
     print("Fetching organizations...")
     organizations = fetch_organizations(pat)
@@ -69,10 +86,11 @@ def index_repositories(pat):
         repos = fetch_repositories(org, pat)
         all_repositories[org] = [{"name": repo['name'], "url": repo['html_url']} for repo in repos]
 
-    with open('repositories_index.json', 'w') as f:
-        json.dump(all_repositories, f, indent=2)
+    # Format the output as required
+    formatted_output = format_output(all_repositories)
 
-    print("Repositories indexed successfully.")
+    # Write the formatted output to README.md
+    write_to_readme(formatted_output)
 
 if __name__ == "__main__":
     # Setup command-line argument parsing
